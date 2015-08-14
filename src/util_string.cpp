@@ -399,6 +399,10 @@ std::string get_full_path( const std::string & fp )
     
     char * result = realpath(fp.c_str(), buf);
     
+    // try with .ck extension
+    if(result == NULL && !str_endsin(fp.c_str(), ".ck"))
+        result = realpath((fp + ".ck").c_str(), buf);
+    
     if(result == NULL)
         return fp;
     else
@@ -409,6 +413,10 @@ std::string get_full_path( const std::string & fp )
 	char buf[MAX_PATH];
 
 	DWORD result = GetFullPathName(fp.c_str(), MAX_PATH, buf, NULL);
+
+    // try with .ck extension
+    if(result == 0 && !str_endsin(fp.c_str(), ".ck"))
+        result = GetFullPathName((fp + ".ck").c_str(), MAX_PATH, buf, NULL);
 
 	if(result == 0)
 		return fp;
@@ -457,7 +465,12 @@ std::string extract_filepath_dir(std::string &filepath)
     if(i == std::string::npos)
         return std::string();
     
-    return std::string(filepath, 0, i);
+    // skip any/all extra trailing slashes
+    while( i > 0 && filepath[i-1] == path_separator )
+        i--;
+    
+    // change spencer 2014-7-17: include trailing slash
+    return std::string(filepath, 0, i+1);
 }
 
 // added: ge 1.3.2.0
@@ -469,19 +482,22 @@ string dir_go_up( const string & dir, t_CKINT numUp )
     // sanity check
     if( numUp < 0 ) numUp = -numUp;
 
-    // if there is already a trailing slash, add extra up
-    if( dir.length() > 0 && dir[dir.length()-1] == path_separator )
-        numUp++;
-    
     // pos
     size_t pos = dir.length();
 
+    // skip any trailing slashes
+    while( pos > 0 && dir[pos-1] == path_separator )
+        pos--;
+    
     // loop
     while( numUp > 0 )
     {
         // find the last slash
         pos = dir.rfind( path_separator, pos-1 );
-        
+        // skip any extra slashes
+        while( pos > 0 && dir[pos-1] == path_separator )
+            pos--;
+
         // not there
         if( pos == string::npos )
             return "";
@@ -497,7 +513,10 @@ string dir_go_up( const string & dir, t_CKINT numUp )
     
     
     // otherwise
-    return string( dir, 0, pos );
+    // change spencer 2014-7-17: include trailing slash
+    string str = string( dir, 0, pos );
+    if( str[str.length()-1] != '/' ) str = str + "/";
+    return str;
 }
 
 //-----------------------------------------------------------------------------
@@ -538,4 +557,12 @@ std::string normalize_directory_separator(const std::string &filepath)
 #else
     return std::string(filepath);
 #endif // __PLATFORM_WIN32__
+}
+
+int str_endsin(const char *str, const char *end)
+{
+    size_t len = strlen(str);
+    size_t endlen = strlen(end);
+    
+    return strncmp(str+(len-endlen), end, endlen) == 0;
 }

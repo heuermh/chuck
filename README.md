@@ -1,5 +1,5 @@
 # ChucK [![Build Status](https://travis-ci.org/ccrma/chuck.svg?branch=master)](https://travis-ci.org/ccrma/chuck)
-## Strongly-timed, Concurrent, and On-the-fly Music Programming Language 
+## Strongly-timed, Concurrent, and On-the-fly Music Programming Language  
 
 Welcome to ChucK! 
 
@@ -7,3 +7,5 @@ what is it? : ChucK is a programming language for real-time sound synthesis and 
 
 For more information, including documentation, research publications, and community resources, please check out the ChucK website:
 http://chuck.stanford.edu/
+
+
